@@ -1,7 +1,7 @@
 #include "Graph.h"
 
-int Graph::addNode(int id, double lat, double lon) {
-    Node n{id, lat, lon};
+int Graph::addNode(int id, double lat, double lon, std::string name) {
+    Node n{id, lat, lon, name};
     nodes.push_back(n);
     adjacency_list.emplace_back();
     return adjacency_list.size() - 1;

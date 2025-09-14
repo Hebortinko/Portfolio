@@ -6,6 +6,7 @@ struct Node {
   int id;
   double lat;
   double lon;
+  std::string name;
 };
 
 struct Edge {
@@ -24,7 +25,7 @@ class Graph {
       std::vector<std::vector<int>> adjacency_list;
 
     public:
-      int addNode(int id, double lat, double lon);
+      int addNode(int id, double lat, double lon, std::string name);
       int addEdge(int id, int from, int to, double length_m, double speed_mps, double max_tonnage_t);
 
       const std::vector<Node>& getNodes() const { return nodes; }
