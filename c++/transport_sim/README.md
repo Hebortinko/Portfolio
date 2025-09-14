@@ -25,3 +25,4 @@ This project is licensed under the MIT License – see [LICENSE](./LICENSE).
 
 ### Third-party libraries
 - RapidJSON – MIT licensed. See \`libs/rapidjson/license.txt\`.
+- [GoogleTest](https://github.com/google/googletest) – BSD-3-Clause License (fetched via CMake FetchContent)
