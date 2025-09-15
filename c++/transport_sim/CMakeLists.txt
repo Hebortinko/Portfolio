@@ -28,6 +28,10 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 find_package(Threads REQUIRED)
 
+
+
+
+
 #main executable
 add_executable(transport_sim
     src/main.cpp
@@ -37,14 +41,14 @@ target_link_libraries(transport_sim PRIVATE transport_sim_core)
 #tests executable
 add_executable(transport_sim_tests
     tests/core/test_graph.cpp
+    tests/io/test_MapLoader.cpp
 )
 
 
-target_link_libraries(transport_sim_tests
-    PRIVATE
+target_link_libraries(transport_sim_tests PRIVATE
         transport_sim_core
-        gtest
-        gtest_main
+        GTest::gtest
+        GTest::gtest_main
         Threads::Threads
 )
 
