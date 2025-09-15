@@ -55,83 +55,167 @@ bool MapLoader::validateSchema(const Document& doc, LoadResults &res) {
     std::unordered_set<int> seenNodeIds;
     std::unordered_set<std::string> seenNames;
     const Value& nodes = doc["nodes"];
-    for (SizeType i = 0; i < nodes.Size(); i++) {
+    for (SizeType i = 0; i < nodes.Size(); ++i) {
+        const auto& n = nodes[i];
 
-        if (!nodes[i].HasMember("id") || !nodes[i]["id"].IsInt()) {
-            res.errors.push_back(("MapLoader: nodes[" + std::to_string(i) + "].id must be int"));
+        // helper na pomenovanie uzla do správy (ak má name, použijeme ho)
+        const std::string nodeTag = n.HasMember("name") && n["name"].IsString()
+            ? (std::string("node '") + n["name"].GetString() + "'")
+            : (std::string("node[") + std::to_string(i) + "]");
+
+        // id
+        if (!n.HasMember("id")) {
+            addError(res, io::ErrorType::MissingField_Node_Id,io::to_string(io::ErrorType::MissingField_Node_Id) + ": " + nodeTag);
+            return false;
+        }
+        if (!n["id"].IsInt()) {
+            addError(res, io::ErrorType::TypeError_Node_IdNotInt,io::to_string(io::ErrorType::TypeError_Node_IdNotInt) + ": " + nodeTag + " -> 'id'");
             return false;
         }
 
-        if (!nodes[i].HasMember("lat") || !nodes[i]["lat"].IsDouble()) {
-            res.errors.push_back(("MapLoader: nodes[" + std::to_string(i) + "].lat must be double"));
+        // lat
+        if (!n.HasMember("lat")) {
+            addError(res, io::ErrorType::MissingField_Node_Lat,io::to_string(io::ErrorType::MissingField_Node_Lat) + ": " + nodeTag);
+            return false;
+        }
+        if (!n["lat"].IsDouble()) {
+            addError(res, io::ErrorType::TypeError_Node_LatNotDouble,io::to_string(io::ErrorType::TypeError_Node_LatNotDouble) + ": " + nodeTag + " -> 'lat'");
+            return false;
+        }
+        {
+            const double lat = n["lat"].GetDouble();
+            if (lat < -90.0 || lat > 90.0) {
+                addError(res, io::ErrorType::RangeError_Node_Lat,io::to_string(io::ErrorType::RangeError_Node_Lat) + ": " + nodeTag +" -> 'lat'=" + std::to_string(lat) + " (expected -90..90)");
+                return false;
+            }
+        }
+
+        // lon
+        if (!n.HasMember("lon")) {
+            addError(res, io::ErrorType::MissingField_Node_Lon,io::to_string(io::ErrorType::MissingField_Node_Lon) + ": " + nodeTag);
+            return false;
+        }
+        if (!n["lon"].IsDouble()) {
+            addError(res, io::ErrorType::TypeError_Node_LonNotDouble,io::to_string(io::ErrorType::TypeError_Node_LonNotDouble) + ": " + nodeTag + " -> 'lon'");
+            return false;
+        }
+        {
+            const double lon = n["lon"].GetDouble();
+            if (lon < -180.0 || lon > 180.0) {
+                addError(res, io::ErrorType::RangeError_Node_Lon,io::to_string(io::ErrorType::RangeError_Node_Lon) + ": " + nodeTag +" -> 'lon'=" + std::to_string(lon) + " (expected -180..180)");
+                return false;
+            }
+        }
+
+        // name
+        if (!n.HasMember("name")) {
+            addError(res, io::ErrorType::MissingField_Node_Name,io::to_string(io::ErrorType::MissingField_Node_Name) + ": " + nodeTag);
+            return false;
+        }
+        if (!n["name"].IsString()) {
+            addError(res, io::ErrorType::TypeError_Node_NameNotString,io::to_string(io::ErrorType::TypeError_Node_NameNotString) + ": node[" +std::to_string(i) + "] -> 'name'");
             return false;
         }
 
-        if (!nodes[i]["lat"].GetDouble() < -90 || nodes[i]["lat"].GetDouble() > 90) {
-            res.errors.push_back(("MapLoader: nodes[" + std::to_string(i) + "].lat must be between -90 and 90"));
+        // duplicates id, name
+        const int idVal = n["id"].GetInt();
+        if (seenNodeIds.find(idVal) != seenNodeIds.end()) {
+            addError(res, io::ErrorType::UniqueError_Node_ID,
+                     io::to_string(io::ErrorType::UniqueError_Node_ID) + ": duplicate id=" + std::to_string(idVal));
             return false;
         }
+        const char* nameVal = n["name"].GetString();
+        if (seenNames.find(nameVal) != seenNames.end()) {
+            addError(res, io::ErrorType::UniqueError_Node_Name,
+                     io::to_string(io::ErrorType::UniqueError_Node_Name) + ": duplicate name '" + std::string(nameVal) + "'");
+            return false;
+        }
+        seenNodeIds.insert(idVal);
+        seenNames.insert(nameVal);
 
-        if (!nodes[i].HasMember("lon") || !nodes[i]["lon"].IsDouble()) {
-            res.errors.push_back(("MapLoader: nodes[" + std::to_string(i) + "].lon must be double"));
-            return false;
-        }
-
-        if (!nodes[i]["lon"].GetDouble() < -180 || nodes[i]["lon"].GetDouble() > 180) {
-            res.errors.push_back(("MapLoader: nodes[" + std::to_string(i) + "].lon must be between -180 and 180"));
-            return false;
-        }
-
-        if (!nodes[i].HasMember("name") || !nodes[i]["name"].IsString()) {
-            res.errors.push_back("MapLoader: nodes[" + std::to_string(i) + "].name must be string");
-            return false;
-        }
-
-        auto it_ids = seenNodeIds.find(nodes[i].GetInt());
-        if (it_ids != seenNodeIds.end()) {
-            res.errors.push_back("MapLoader: duplicate node id= " + nodes[i].GetInt());
-            return false;
-        }
-
-        auto it_names = seenNames.find(nodes[i].GetString());
-        if (it_names != seenNames.end()) {
-            res.errors.push_back("MapLoader: duplicate name id= " + nodes[i].GetInt());
-            return false;
-        }
-        seenNodeIds.insert(nodes[i].GetInt());
-        seenNames.insert(nodes[i].GetString());
-        
     }
 
     //Deeper validation for edges
     const Value& edges = doc["edges"];
-    for (SizeType i = 0; i < nodes.Size(); i++) {
 
-        if (!nodes[i].HasMember("id") || !nodes[i]["id"].IsInt()) {
-            res.errors.push_back(("MapLoader: nodes[" + std::to_string(i) + "].id must be int"));
-        }
+for (SizeType i = 0; i < edges.Size(); ++i) {
+    const auto& e = edges[i];
+    const std::string edgeTag = std::string("edge[") + std::to_string(i) + "]";
 
-        if (!nodes[i].HasMember("from") || !nodes[i]["from"].IsInt()) {
-            res.errors.push_back(("MapLoader: nodes[" + std::to_string(i) + "].from must be int"));
-        }
+    // id
+    if (!e.HasMember("id")) {
+        addError(res, io::ErrorType::MissingField_Edge_Id,io::to_string(io::ErrorType::MissingField_Edge_Id) + ": " + edgeTag);
+        return false;
+    }
+    if (!e["id"].IsInt()) {
+        addError(res, io::ErrorType::TypeError_Edge_IdNotInt,io::to_string(io::ErrorType::TypeError_Edge_IdNotInt) + ": " + edgeTag + " -> 'id'");
+        return false;
+    }
+    const int eid = e["id"].GetInt();
 
-        if (!nodes[i].HasMember("to") || !nodes[i]["to"].IsInt()) {
-            res.errors.push_back(("MapLoader: nodes[" + std::to_string(i) + "].to must be int"));
-        }
+    // from
+    if (!e.HasMember("from")) {
+        addError(res, io::ErrorType::MissingField_Edge_From,io::to_string(io::ErrorType::MissingField_Edge_From) + ": " + edgeTag);
+        return false;
+    }
+    if (!e["from"].IsInt()) {
+        addError(res, io::ErrorType::TypeError_Edge_FromNotInt,io::to_string(io::ErrorType::TypeError_Edge_FromNotInt) + ": " + edgeTag + " -> 'from'");
+        return false;
+    }
+    const int from = e["from"].GetInt();
 
-        if (!nodes[i].HasMember("lenght_m") || !nodes[i]["lenght_m"].IsDouble()) {
-            res.errors.push_back("MapLoader: nodes[" + std::to_string(i) + "].lenght_m must be double");
-        }
+    // to
+    if (!e.HasMember("to")) {
+        addError(res, io::ErrorType::MissingField_Edge_To,io::to_string(io::ErrorType::MissingField_Edge_To) + ": " + edgeTag);
+        return false;
+    }
+    if (!e["to"].IsInt()) {
+        addError(res, io::ErrorType::TypeError_Edge_ToNotInt,io::to_string(io::ErrorType::TypeError_Edge_ToNotInt) + ": " + edgeTag + " -> 'to'");
+        return false;
+    }
+    const int to = e["to"].GetInt();
 
-        if (!nodes[i].HasMember("speed_kmh") || !nodes[i]["speed_kmh"].IsDouble()) {
-            res.errors.push_back("MapLoader: nodes[" + std::to_string(i) + "].speed_kmh must be double");
-        }
+    // length_m (JSON key), enum has "Lenght"
+    if (!e.HasMember("length_m")) {
+        addError(res, io::ErrorType::MissingField_Edge_Lenght_m,io::to_string(io::ErrorType::MissingField_Edge_Lenght_m) + ": " + edgeTag);
+        return false;
+    }
+    if (!e["length_m"].IsDouble()) {
+        addError(res, io::ErrorType::TypeError_Edge_LenghtNotDouble,io::to_string(io::ErrorType::TypeError_Edge_LenghtNotDouble) + ": " + edgeTag + " -> 'length_m'");
+        return false;
+    }
+    const double length_m = e["length_m"].GetDouble();
 
-        if (!nodes[i].HasMember("max_tonnage_t") || !nodes[i]["max_tonnage_m"].IsDouble()) {
-            res.errors.push_back("MapLoader: nodes[" + std::to_string(i) + "].max_tonnage_m must be double");
+    // speed_kmh
+    if (!e.HasMember("speed_kmh")) {
+        addError(res, io::ErrorType::MissingField_Edge_Speed_mps,io::to_string(io::ErrorType::MissingField_Edge_Speed_mps) + ": " + edgeTag);
+        return false;
+    }
+    if (!e["speed_kmh"].IsDouble()) {
+        addError(res, io::ErrorType::TypeError_Edge_SpeedNotDouble,io::to_string(io::ErrorType::TypeError_Edge_SpeedNotDouble) + ": " + edgeTag + " -> 'speed_kmh'");
+        return false;
+    }
+    const double speed_kmh = e["speed_kmh"].GetDouble();
+
+    // max_tonnage_t
+    if (!e.HasMember("max_tonnage_t")) {
+        addError(res, io::ErrorType::MissingField_Edge_MaxTonnage,io::to_string(io::ErrorType::MissingField_Edge_MaxTonnage) + ": " + edgeTag);
+        return false;
+    }
+    if (!e["max_tonnage_t"].IsDouble()) {
+        addError(res, io::ErrorType::TypeError_Edge_MaxTonnageNotDouble,io::to_string(io::ErrorType::TypeError_Edge_MaxTonnageNotDouble) + ": " + edgeTag + " -> 'max_tonnage_t'");
+        return false;
         }
     }
+
+    return true;
 }
+
+void MapLoader::addError(LoadResults& res, io::ErrorType type, const std::string& message, std::optional<int> node_id, std::optional<int> edge_id) {
+    res.errors_codes.push_back(LoadError{type,message,node_id,edge_id});
+    res.errors.push_back(message);
+}
+
 
 /*bool MapLoader::buildGraph(const Document& doc, Graph& graph, LoadStat &res) {
     Value& nodes = doc["nodes"];
