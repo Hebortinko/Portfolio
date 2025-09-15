@@ -65,55 +65,55 @@ bool MapLoader::validateSchema(const Document& doc, LoadResults &res) {
 
         // id
         if (!n.HasMember("id")) {
-            addError(res, io::ErrorType::MissingField_Node_Id,io::to_string(io::ErrorType::MissingField_Node_Id) + ": " + nodeTag);
+            addError(res, io::ErrorType::MissingField_Node_Id,io::to_string(io::ErrorType::MissingField_Node_Id) + std::string(":+ ") + nodeTag);
             return false;
         }
         if (!n["id"].IsInt()) {
-            addError(res, io::ErrorType::TypeError_Node_IdNotInt,io::to_string(io::ErrorType::TypeError_Node_IdNotInt) + ": " + nodeTag + " -> 'id'");
+            addError(res, io::ErrorType::TypeError_Node_IdNotInt,io::to_string(io::ErrorType::TypeError_Node_IdNotInt) + std::string(":+ ") + nodeTag + " -> 'id'");
             return false;
         }
 
         // lat
         if (!n.HasMember("lat")) {
-            addError(res, io::ErrorType::MissingField_Node_Lat,io::to_string(io::ErrorType::MissingField_Node_Lat) + ": " + nodeTag);
+            addError(res, io::ErrorType::MissingField_Node_Lat,io::to_string(io::ErrorType::MissingField_Node_Lat) + std::string(":+ ") + nodeTag);
             return false;
         }
         if (!n["lat"].IsDouble()) {
-            addError(res, io::ErrorType::TypeError_Node_LatNotDouble,io::to_string(io::ErrorType::TypeError_Node_LatNotDouble) + ": " + nodeTag + " -> 'lat'");
+            addError(res, io::ErrorType::TypeError_Node_LatNotDouble,io::to_string(io::ErrorType::TypeError_Node_LatNotDouble) + std::string(":+ ") + nodeTag + " -> 'lat'");
             return false;
         }
         {
             const double lat = n["lat"].GetDouble();
             if (lat < -90.0 || lat > 90.0) {
-                addError(res, io::ErrorType::RangeError_Node_Lat,io::to_string(io::ErrorType::RangeError_Node_Lat) + ": " + nodeTag +" -> 'lat'=" + std::to_string(lat) + " (expected -90..90)");
+                addError(res, io::ErrorType::RangeError_Node_Lat,io::to_string(io::ErrorType::RangeError_Node_Lat) + std::string(":+ ") + nodeTag +" -> 'lat'=" + std::to_string(lat) + " (expected -90..90)");
                 return false;
             }
         }
 
         // lon
         if (!n.HasMember("lon")) {
-            addError(res, io::ErrorType::MissingField_Node_Lon,io::to_string(io::ErrorType::MissingField_Node_Lon) + ": " + nodeTag);
+            addError(res, io::ErrorType::MissingField_Node_Lon,io::to_string(io::ErrorType::MissingField_Node_Lon) + std::string(":+ ") + nodeTag);
             return false;
         }
         if (!n["lon"].IsDouble()) {
-            addError(res, io::ErrorType::TypeError_Node_LonNotDouble,io::to_string(io::ErrorType::TypeError_Node_LonNotDouble) + ": " + nodeTag + " -> 'lon'");
+            addError(res, io::ErrorType::TypeError_Node_LonNotDouble,io::to_string(io::ErrorType::TypeError_Node_LonNotDouble) + std::string(":+ ") + nodeTag + " -> 'lon'");
             return false;
         }
         {
             const double lon = n["lon"].GetDouble();
             if (lon < -180.0 || lon > 180.0) {
-                addError(res, io::ErrorType::RangeError_Node_Lon,io::to_string(io::ErrorType::RangeError_Node_Lon) + ": " + nodeTag +" -> 'lon'=" + std::to_string(lon) + " (expected -180..180)");
+                addError(res, io::ErrorType::RangeError_Node_Lon,io::to_string(io::ErrorType::RangeError_Node_Lon) + std::string(":+ ") + nodeTag +" -> 'lon'=" + std::to_string(lon) + " (expected -180..180)");
                 return false;
             }
         }
 
         // name
         if (!n.HasMember("name")) {
-            addError(res, io::ErrorType::MissingField_Node_Name,io::to_string(io::ErrorType::MissingField_Node_Name) + ": " + nodeTag);
+            addError(res, io::ErrorType::MissingField_Node_Name,io::to_string(io::ErrorType::MissingField_Node_Name) + std::string(":+ ") + nodeTag);
             return false;
         }
         if (!n["name"].IsString()) {
-            addError(res, io::ErrorType::TypeError_Node_NameNotString,io::to_string(io::ErrorType::TypeError_Node_NameNotString) + ": node[" +std::to_string(i) + "] -> 'name'");
+            addError(res, io::ErrorType::TypeError_Node_NameNotString,io::to_string(io::ErrorType::TypeError_Node_NameNotString) + std::string(":+ ") +std::to_string(i) + "] -> 'name'");
             return false;
         }
 
@@ -121,13 +121,13 @@ bool MapLoader::validateSchema(const Document& doc, LoadResults &res) {
         const int idVal = n["id"].GetInt();
         if (seenNodeIds.find(idVal) != seenNodeIds.end()) {
             addError(res, io::ErrorType::UniqueError_Node_ID,
-                     io::to_string(io::ErrorType::UniqueError_Node_ID) + ": duplicate id=" + std::to_string(idVal));
+                     io::to_string(io::ErrorType::UniqueError_Node_ID) + std::string(": duplicate id=") + std::to_string(idVal));
             return false;
         }
         const char* nameVal = n["name"].GetString();
         if (seenNames.find(nameVal) != seenNames.end()) {
             addError(res, io::ErrorType::UniqueError_Node_Name,
-                     io::to_string(io::ErrorType::UniqueError_Node_Name) + ": duplicate name '" + std::string(nameVal) + "'");
+                     io::to_string(io::ErrorType::UniqueError_Node_Name) + std::string(": duplicate name '") + std::string(nameVal) + "'");
             return false;
         }
         seenNodeIds.insert(idVal);
@@ -144,66 +144,66 @@ for (SizeType i = 0; i < edges.Size(); ++i) {
 
     // id
     if (!e.HasMember("id")) {
-        addError(res, io::ErrorType::MissingField_Edge_Id,io::to_string(io::ErrorType::MissingField_Edge_Id) + ": " + edgeTag);
+        addError(res, io::ErrorType::MissingField_Edge_Id,io::to_string(io::ErrorType::MissingField_Edge_Id) + std::string(": ") + edgeTag);
         return false;
     }
     if (!e["id"].IsInt()) {
-        addError(res, io::ErrorType::TypeError_Edge_IdNotInt,io::to_string(io::ErrorType::TypeError_Edge_IdNotInt) + ": " + edgeTag + " -> 'id'");
+        addError(res, io::ErrorType::TypeError_Edge_IdNotInt,io::to_string(io::ErrorType::TypeError_Edge_IdNotInt) + std::string(": ") + edgeTag + " -> 'id'");
         return false;
     }
     const int eid = e["id"].GetInt();
 
     // from
     if (!e.HasMember("from")) {
-        addError(res, io::ErrorType::MissingField_Edge_From,io::to_string(io::ErrorType::MissingField_Edge_From) + ": " + edgeTag);
+        addError(res, io::ErrorType::MissingField_Edge_From,io::to_string(io::ErrorType::MissingField_Edge_From) + std::string(": ") + edgeTag);
         return false;
     }
     if (!e["from"].IsInt()) {
-        addError(res, io::ErrorType::TypeError_Edge_FromNotInt,io::to_string(io::ErrorType::TypeError_Edge_FromNotInt) + ": " + edgeTag + " -> 'from'");
+        addError(res, io::ErrorType::TypeError_Edge_FromNotInt,io::to_string(io::ErrorType::TypeError_Edge_FromNotInt) + std::string(": ") + edgeTag + " -> 'from'");
         return false;
     }
     const int from = e["from"].GetInt();
 
     // to
     if (!e.HasMember("to")) {
-        addError(res, io::ErrorType::MissingField_Edge_To,io::to_string(io::ErrorType::MissingField_Edge_To) + ": " + edgeTag);
+        addError(res, io::ErrorType::MissingField_Edge_To,io::to_string(io::ErrorType::MissingField_Edge_To) + std::string(": ") + edgeTag);
         return false;
     }
     if (!e["to"].IsInt()) {
-        addError(res, io::ErrorType::TypeError_Edge_ToNotInt,io::to_string(io::ErrorType::TypeError_Edge_ToNotInt) + ": " + edgeTag + " -> 'to'");
+        addError(res, io::ErrorType::TypeError_Edge_ToNotInt,io::to_string(io::ErrorType::TypeError_Edge_ToNotInt) + std::string(": ") + edgeTag + " -> 'to'");
         return false;
     }
     const int to = e["to"].GetInt();
 
     // length_m (JSON key), enum has "Lenght"
     if (!e.HasMember("length_m")) {
-        addError(res, io::ErrorType::MissingField_Edge_Lenght_m,io::to_string(io::ErrorType::MissingField_Edge_Lenght_m) + ": " + edgeTag);
+        addError(res, io::ErrorType::MissingField_Edge_Lenght_m,io::to_string(io::ErrorType::MissingField_Edge_Lenght_m) + std::string(": ") + edgeTag);
         return false;
     }
     if (!e["length_m"].IsDouble()) {
-        addError(res, io::ErrorType::TypeError_Edge_LenghtNotDouble,io::to_string(io::ErrorType::TypeError_Edge_LenghtNotDouble) + ": " + edgeTag + " -> 'length_m'");
+        addError(res, io::ErrorType::TypeError_Edge_LenghtNotDouble,io::to_string(io::ErrorType::TypeError_Edge_LenghtNotDouble) + std::string(": ") + edgeTag + " -> 'length_m'");
         return false;
     }
     const double length_m = e["length_m"].GetDouble();
 
     // speed_kmh
     if (!e.HasMember("speed_kmh")) {
-        addError(res, io::ErrorType::MissingField_Edge_Speed_mps,io::to_string(io::ErrorType::MissingField_Edge_Speed_mps) + ": " + edgeTag);
+        addError(res, io::ErrorType::MissingField_Edge_Speed_mps,io::to_string(io::ErrorType::MissingField_Edge_Speed_mps) + std::string(": ") + edgeTag);
         return false;
     }
     if (!e["speed_kmh"].IsDouble()) {
-        addError(res, io::ErrorType::TypeError_Edge_SpeedNotDouble,io::to_string(io::ErrorType::TypeError_Edge_SpeedNotDouble) + ": " + edgeTag + " -> 'speed_kmh'");
+        addError(res, io::ErrorType::TypeError_Edge_SpeedNotDouble,io::to_string(io::ErrorType::TypeError_Edge_SpeedNotDouble) + std::string(": ") + edgeTag + " -> 'speed_kmh'");
         return false;
     }
     const double speed_kmh = e["speed_kmh"].GetDouble();
 
     // max_tonnage_t
     if (!e.HasMember("max_tonnage_t")) {
-        addError(res, io::ErrorType::MissingField_Edge_MaxTonnage,io::to_string(io::ErrorType::MissingField_Edge_MaxTonnage) + ": " + edgeTag);
+        addError(res, io::ErrorType::MissingField_Edge_MaxTonnage,io::to_string(io::ErrorType::MissingField_Edge_MaxTonnage) + std::string(": ") + edgeTag);
         return false;
     }
     if (!e["max_tonnage_t"].IsDouble()) {
-        addError(res, io::ErrorType::TypeError_Edge_MaxTonnageNotDouble,io::to_string(io::ErrorType::TypeError_Edge_MaxTonnageNotDouble) + ": " + edgeTag + " -> 'max_tonnage_t'");
+        addError(res, io::ErrorType::TypeError_Edge_MaxTonnageNotDouble,io::to_string(io::ErrorType::TypeError_Edge_MaxTonnageNotDouble) + std::string(": ") + edgeTag + " -> 'max_tonnage_t'");
         return false;
         }
     }
