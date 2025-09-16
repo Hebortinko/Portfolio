@@ -48,7 +48,7 @@ public:
 
     bool parsefile(const std::string& filepath, Document& doc, LoadResults& res);
     bool validateSchema(const Document& doc, LoadResults& res);
-    bool buildGraph(const Document& doc, Graph& graph, LoadStat& res);
+    bool buildGraph(const Document& doc, Graph& graph);
     void addError(LoadResults& res, io::ErrorType type, const std::string& message, std::optional<int> node_id = std::nullopt, std::optional<int> edge_id = std::nullopt);
 };
 

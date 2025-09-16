@@ -217,9 +217,9 @@ void MapLoader::addError(LoadResults& res, io::ErrorType type, const std::string
 }
 
 
-/*bool MapLoader::buildGraph(const Document& doc, Graph& graph, LoadStat &res) {
-    Value& nodes = doc["nodes"];
-    Value& edges = doc["edges"];
+bool MapLoader::buildGraph(const Document& doc, Graph& graph) {
+    const Value& nodes = doc["nodes"];
+    const Value& edges = doc["edges"];
 
     for (SizeType i = 0; i < nodes.Size(); i++) {
         int id = nodes[i]["id"].GetInt();
@@ -241,4 +241,3 @@ void MapLoader::addError(LoadResults& res, io::ErrorType type, const std::string
 
     }
 }
-*/
