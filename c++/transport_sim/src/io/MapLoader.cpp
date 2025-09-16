@@ -18,6 +18,11 @@ LoadResults MapLoader::load(const std::string& filepath, Graph& graph) {
         return result;
     }
 
+    if (result.errors.empty()) {
+        result.success = true;
+    }
+    buildGraph(doc, graph);
+    return result;
 }
 
 bool MapLoader::parsefile(const std::string &filepath, Document &doc, LoadResults &res) {
@@ -238,6 +243,5 @@ bool MapLoader::buildGraph(const Document& doc, Graph& graph) {
         double speed_kmh = edges[i]["speed_kmh"].GetDouble();
         double max_tonnage_t = edges[i]["max_tonnage_t"].GetDouble();
         graph.addEdge(id, from, to, length_m, speed_kmh, max_tonnage_t);
-
     }
 }
